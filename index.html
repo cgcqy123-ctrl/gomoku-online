@@ -4,9 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#2a1a0e" />
+<!-- 页面本身就是深色主题：显式声明深色适配，避免安卓浏览器/WebView 的「强制深色」把白棋子自动反色 -->
+<meta name="color-scheme" content="dark light" />
 <title>五子棋 · 联机版</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23e4c48c'/><circle cx='38' cy='38' r='17' fill='%23111'/><circle cx='64' cy='64' r='17' fill='%23fff' stroke='%23888' stroke-width='2'/></svg>" />
-<link rel="stylesheet" href="css/style.css?v=1" />
+<link rel="stylesheet" href="css/style.css?v=2" />
 </head>
 <body>
 <div id="app">
@@ -93,6 +95,6 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/vendor/peerjs.min.js"></script>
-<script type="module" src="js/main.js?v=1"></script>
+<script type="module" src="js/main.js?v=2"></script>
 </body>
 </html>
