@@ -157,8 +157,17 @@ const foe = joinAs('乙');
 await waitFor(() => foe.seat === 1 && $('btn-start').disabled === false, 2000);
 ok(foe.seat === 1, '乙 应该坐 1 号位（白方），实际 ' + foe.seat);
 ok(foe.spectator === false, '乙 是玩家不是观众');
-ok(foe.lobby && foe.lobby.players && foe.lobby.players[0].name === '甲', '好友收到大厅名单');
+ok(foe.lobby && foe.lobby.players && foe.lobby.players[0].name === '甲', '好友收到大厅名单（能看到房主名字）');
+ok(foe.lobby && foe.lobby.players && foe.lobby.players[1] && foe.lobby.players[1].name === '乙', '好友在大厅里能看到自己的名字');
+ok(foe.lobby && foe.lobby.players && foe.lobby.players.length === 2, '好友能看到大厅一共有 2 个座位');
 ok(document.querySelectorAll('#seat-list .seat-item.filled').length === 2, '大厅显示两个座位都有名字');
+
+// 重复 hello 幂等（Safari 补发 hello）：不能抢座位，还要补发大厅
+const lobbyBefore = foe.lobby;
+foe.conn.send({ t: 'hello', name: '乙' });
+await waitFor(() => foe.lobby && foe.lobby !== lobbyBefore, 1500);
+ok(foe.seat === 1, '重复 hello 不会改变好友座位');
+ok(foe.lobby && foe.lobby.players[0].name === '甲' && foe.lobby.players[1].name === '乙', '重复 hello 会补发大厅座位表');
 
 /* ---------------- 开局 ---------------- */
 
@@ -322,6 +331,26 @@ await waitFor(() => $('side-spec').textContent === '观战 6', 3000);
 const extra = joinAs('多出来的');
 await waitFor(() => extra.full === true, 2000);
 ok(extra.full === true, '第 9 个人应该被拒绝（房间已满）');
+
+/* ---------------- Safari 握手重试（直接测 GuestRoom） ---------------- */
+const { GuestRoom } = await import(url('js/net.js'));
+const dropHost = new FakePeer('gomoku-test');
+let helloSeen = 0;
+dropHost.on('connection', (conn) => {
+  conn.on('data', (msg) => {
+    if (msg.t === 'hello') {
+      helloSeen++;
+      if (helloSeen === 1) return; // 模拟 Safari 吞掉第一条 hello
+      conn.send({ t: 'joined', seat: 1, code: 'TEST', side: 'w', spectator: false });
+    }
+  });
+});
+const received = [];
+const gr = new GuestRoom({ onMessage: (m) => received.push(m) });
+await gr.join('TEST', '小八');
+ok(await waitFor(() => received.some((m) => m.t === 'joined'), 4000), 'GuestRoom 在首条 hello 丢失后会自动重发并完成握手');
+ok(helloSeen >= 2, '房主实际收到了重发的 hello，实际次数 ' + helloSeen);
+gr.close();
 
 /* ---------------- 汇总 ---------------- */
 
