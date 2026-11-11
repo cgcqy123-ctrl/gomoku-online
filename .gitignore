@@ -1,0 +1,21 @@
+# 依赖
+node_modules/
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# 构建与临时产物
+_site/
+dist/
+*.log
+npm-debug.log*
+
+# 本地测试缓存（沙箱内安装时用）
+.npm-cache/
+.chrome-*/
+_*.png
+_*.html
